@@ -83,6 +83,52 @@ export async function AutomationCreateModal({
         blockId: "conditionBlock",
     });
 
+    // Action selection (new dropdown)
+    blocks.addInputBlock({
+        label: {
+            text: t("automation_action_label"),
+            type: TextObjectType.PLAINTEXT,
+        },
+        element: blocks.newStaticSelectElement({
+            actionId: "action",
+            placeholder: {
+                text: t("automation_action_placeholder"),
+                type: TextObjectType.PLAINTEXT,
+            },
+            options: [
+                {
+                    text: {
+                        text: t("automation_action_send_dm"),
+                        type: TextObjectType.PLAINTEXT,
+                    },
+                    value: "send-message-in-dm",
+                },
+                {
+                    text: {
+                        text: t("automation_action_send_channel"),
+                        type: TextObjectType.PLAINTEXT,
+                    },
+                    value: "send-message-in-channel",
+                },
+                {
+                    text: {
+                        text: t("automation_action_delete"),
+                        type: TextObjectType.PLAINTEXT,
+                    },
+                    value: "delete-message",
+                },
+                {
+                    text: {
+                        text: t("automation_action_edit"),
+                        type: TextObjectType.PLAINTEXT,
+                    },
+                    value: "edit-message",
+                },
+            ],
+        }),
+        blockId: "actionBlock",
+    });
+
     // Response message
     blocks.addInputBlock({
         label: {
@@ -105,6 +151,7 @@ export async function AutomationCreateModal({
         title: blocks.newPlainTextObject(t("automation_create_title")),
         submit: blocks.newButtonElement({
             text: blocks.newPlainTextObject(t("create_automation")),
+            actionId: 'automation_create_config',
         }),
         blocks: blocks.getBlocks(),
     };

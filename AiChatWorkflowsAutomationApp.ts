@@ -14,6 +14,8 @@ import { IPostMessageSentToBot } from "@rocket.chat/apps-engine/definition/messa
 import { IMessage } from "@rocket.chat/apps-engine/definition/messages";
 import { PostMessageSentToBotHandler } from "./handler/PostMessageSentToBotHandler";
 import { ChatAutomationCreate } from "./slashCommands/ChatAutomationCreate";
+import { UIKitViewSubmitInteractionContext } from "@rocket.chat/apps-engine/definition/uikit";
+import { ExecuteViewSubmitHandler } from "./handler/ExecuteViewSubmitHandler";
 
 export class AiChatWorkflowsAutomationApp
     extends App
@@ -39,6 +41,17 @@ export class AiChatWorkflowsAutomationApp
             modify
         );
     }
+
+    public async executeViewSubmitHandler(
+		context: UIKitViewSubmitInteractionContext,
+		read: IRead,
+		http: IHttp,
+		persistence: IPersistence,
+		modify: IModify,
+	) {
+		const handler = new ExecuteViewSubmitHandler(this, read, http, modify, persistence);
+		return await handler.run(context);
+	}
 
     public async extendConfiguration(configuration: IConfigurationExtend) {
         await Promise.all([

@@ -20,9 +20,11 @@ import {
     clearUserCommand,
     clearUserQuestions,
     clearUserStep,
+    getTriggerResponse,
     getUserCommand,
     getUserQuestions,
     getUserStep,
+    saveTriggerResponse,
     setUserCommand,
     setUserQuestions,
     setUserStep,
@@ -161,6 +163,13 @@ export class PostMessageSentToBotHandler implements IPostMessageSentToBot {
                 JSON.stringify(structuredParsingResponse)
             );
 
+            const id = await saveTriggerResponse(
+                persistence,
+                structuredParsingResponse
+            );
+            const record = await getTriggerResponse(read, id);
+            console.log("record : " + JSON.stringify(record));
+
             await clearUserCommand(persistence, user.id);
             await clearUserStep(persistence, user.id);
             await clearUserQuestions(persistence, user.id);
@@ -226,6 +235,13 @@ export class PostMessageSentToBotHandler implements IPostMessageSentToBot {
                 user,
                 JSON.stringify(structuredParsingResponse)
             );
+
+            const id = await saveTriggerResponse(
+                persistence,
+                structuredParsingResponse
+            );
+            const record = await getTriggerResponse(read, id);
+            console.log("record : " + JSON.stringify(record));
         }
     }
 }

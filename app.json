@@ -12,7 +12,9 @@
     "nameSlug": "ai-chat-workflows-automation",
     "classFile": "AiChatWorkflowsAutomationApp.ts",
     "description": "Platform for generating functional automated chat workflows using LLMs.",
-    "implements": ["IPostMessageSentToBot"],
+    "implements": [
+        "IPostMessageSentToBot"
+    ],
     "permissions": [
         {
             "name": "user.read"
