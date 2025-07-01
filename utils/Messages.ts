@@ -11,7 +11,10 @@ import {
 } from "@rocket.chat/apps-engine/definition/uikit";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
 import { NotificationsController } from "./Notifications";
-import { IMessageRaw } from "@rocket.chat/apps-engine/definition/messages";
+import {
+    IMessage,
+    IMessageRaw,
+} from "@rocket.chat/apps-engine/definition/messages";
 
 export async function sendNotification(
     read: IRead,
@@ -209,4 +212,57 @@ export async function sendMessageInChannel(
 
     await modify.getCreator().finish(messageBuilder);
     return;
+}
+
+export async function deleteMessage(
+    modify: IModify,
+    message: IMessage,
+    user: IUser
+): Promise<boolean> {
+    try {
+        await modify.getDeleter().deleteMessage(message, user);
+        return true;
+    } catch (error) {
+        console.error("Error deleting message:", error);
+        return false;
+    }
+}
+
+export async function updateMessageText(
+    modify: IModify,
+    originalMessage: IMessage,
+    updatedText: string,
+    user: IUser
+): Promise<boolean> {
+    try {
+        // Get the message builder by awaiting the promise
+        const messageBuilder = await modify
+            .getUpdater()
+            .message(originalMessage.id ?? "", originalMessage.sender);
+        if (!messageBuilder) {
+            console.log("Message builder not found");
+            return false;
+        }
+
+        // Set the updated properties
+        messageBuilder
+            .setEditor(user) // Set who is editing the message
+            .setText(updatedText)
+            .setRoom(originalMessage.room)
+            .setGroupable(originalMessage.groupable ?? false)
+            .setParseUrls(originalMessage.parseUrls ?? false);
+
+        // If the original message had blocks, preserve them
+        if (originalMessage.blocks) {
+            messageBuilder.setBlocks(originalMessage.blocks);
+        }
+
+        // Apply the update
+        await modify.getUpdater().finish(messageBuilder);
+
+        return true;
+    } catch (error) {
+        console.error("Error updating message:", error);
+        return false;
+    }
 }
