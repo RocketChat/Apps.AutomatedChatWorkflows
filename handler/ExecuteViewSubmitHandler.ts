@@ -56,18 +56,25 @@ export class ExecuteViewSubmitHandler {
         const condition = view.state?.["conditionBlock"]?.["condition"] || "";
         const response = view.state?.["responseBlock"]?.["response"] || "";
 
-        const id = await saveTriggerResponse(this.persistence, {
-            command: "",
-            trigger: {
-                user: users,
-                channel: channels,
-                condition: condition,
+        const command = `When the user @${users} sends a message in the #${channels} channel that includes the phrase "${condition}", then perform the action "${action}" with response '${response}'.`;
+
+        const id = await saveTriggerResponse(
+            this.persistence,
+            {
+                command: command,
+                trigger: {
+                    user: users,
+                    channel: channels,
+                    condition: condition,
+                },
+                response: {
+                    action: action,
+                    message: response,
+                },
             },
-            response: {
-                action: action,
-                message: response,
-            },
-        });
+            user.id,
+            false
+        );
 
         const record = await getTriggerResponse(this.read, id);
         console.log("record : " + JSON.stringify(record));

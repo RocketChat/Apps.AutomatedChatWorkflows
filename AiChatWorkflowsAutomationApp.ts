@@ -20,6 +20,7 @@ import { ChatAutomationCreate } from "./slashCommands/ChatAutomationCreate";
 import { UIKitViewSubmitInteractionContext } from "@rocket.chat/apps-engine/definition/uikit";
 import { ExecuteViewSubmitHandler } from "./handler/ExecuteViewSubmitHandler";
 import { PostMessageSentHandler } from "./handler/PostMessageSentHandler";
+import { ChatAutomation } from "./slashCommands/ChatAutomation";
 
 export class AiChatWorkflowsAutomationApp
     extends App
@@ -88,6 +89,9 @@ export class AiChatWorkflowsAutomationApp
             ),
             configuration.slashCommands.provideSlashCommand(
                 new ChatAutomationCreate(this)
+            ),
+            configuration.slashCommands.provideSlashCommand(
+                new ChatAutomation(this)
             ),
         ]);
     }

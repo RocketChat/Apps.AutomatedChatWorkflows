@@ -20,7 +20,6 @@ import {
     clearUserCommand,
     clearUserQuestions,
     clearUserStep,
-    getTriggerResponse,
     getUserCommand,
     getUserQuestions,
     getUserStep,
@@ -78,19 +77,15 @@ export class PostMessageSentToBotHandler implements IPostMessageSentToBot {
         const room = message.room;
         const appUser = (await read.getUserReader().getAppUser()) as IUser;
 
-        console.log("text : " + text);
-
         if (!text) return;
 
         // Get a user's step
         const currentStep = await getUserStep(read, user.id);
         if (currentStep && currentStep === "clarification") {
-            console.log(`User is at step: ${currentStep}`);
-
             const questionsArr = await getUserQuestions(read, user.id);
             if (!questionsArr) return;
 
-            questionsArr.forEach((q, i) => console.log(`${i + 1}. ${q}`));
+            // questionsArr.forEach((q, i) => console.log(`${i + 1}. ${q}`));
 
             const answerIdentificationPrompt = createAnswerIdentificationPrompt(
                 questionsArr,
@@ -168,9 +163,12 @@ export class PostMessageSentToBotHandler implements IPostMessageSentToBot {
                 JSON.stringify(responseToSave)
             );
 
-            const id = await saveTriggerResponse(persistence, responseToSave);
-            const record = await getTriggerResponse(read, id);
-            console.log("record : " + JSON.stringify(record));
+            const id = await saveTriggerResponse(
+                persistence,
+                responseToSave,
+                user.id,
+                true
+            );
 
             await clearUserCommand(persistence, user.id);
             await clearUserStep(persistence, user.id);
@@ -243,9 +241,12 @@ export class PostMessageSentToBotHandler implements IPostMessageSentToBot {
                 JSON.stringify(responseToSave)
             );
 
-            const id = await saveTriggerResponse(persistence, responseToSave);
-            const record = await getTriggerResponse(read, id);
-            console.log("record : " + JSON.stringify(record));
+            const id = await saveTriggerResponse(
+                persistence,
+                responseToSave,
+                user.id,
+                true
+            );
         }
     }
 }
