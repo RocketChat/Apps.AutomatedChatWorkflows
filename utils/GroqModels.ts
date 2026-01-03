@@ -27,7 +27,7 @@ export async function createTextCompletionGroq(
     }
 
     const body = {
-        groqModel,
+        model: groqModel,
         messages: [
             {
                 role: "system",
@@ -49,5 +49,17 @@ export async function createTextCompletionGroq(
         throw new Error("Something is wrong with AI. Please try again later");
     }
 
-    return response.data.choices[0].message.content;
+    const parsedResponse = JSON.parse(response.content)
+
+    if (!parsedResponse.choices || parsedResponse.choices.length === 0) {
+        console.error("No choices in Groq response:", parsedResponse);
+        throw new Error("Invalid response from Groq API - no choices returned");
+    }
+    const messageContent = parsedResponse.choices[0]?.message?.content;
+    if (!messageContent) {
+        console.error("No message content in Groq response:", parsedResponse);
+        throw new Error("Invalid response from Groq API - no message content");
+    }
+
+    return messageContent;
 }
