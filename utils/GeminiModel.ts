@@ -15,32 +15,45 @@ export async function createTextCompletionGemini(
         throw new Error("geminiApiKey not configured.");
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+    const geminiModel = await read
+        .getEnvironmentReader()
+        .getSettings()
+        .getValueById(SettingEnum.ID_GEMINI_MODEL);
+
+    if (!geminiModel) {
+        throw new Error("geminiModel not configured.");
+    }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`;
 
     const body = {
         contents: [{ parts: [{ text: prompt }] }],
     };
 
     const response = await http.post(url, {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+        },
         content: JSON.stringify(body),
     });
 
     if (response.statusCode !== 200 || !response.content) {
-        return JSON.stringify({
-            message:
-                "Sorry! I was unable to process your request. Please try again.",
-        });
+        throw new Error(
+            "Sorry! I was unable to process your request. Please try again."
+        );
     }
 
-    let text = JSON.parse(response.content)?.candidates?.[0]?.content
-        ?.parts?.[0]?.text;
+    let text =
+        JSON.parse(response.content)?.candidates?.[0]?.content?.parts?.[0]
+            ?.text;
 
-    // Clean up the response if it's wrapped in markdown code blocks
-    if (text.startsWith("```json") && text.endsWith("```")) {
-        text = text.slice(7, -3).trim(); // Remove ```json and ```
-    } else if (text.startsWith("```") && text.endsWith("```")) {
-        text = text.slice(3, -3).trim(); // Remove ``` and ```
+    if (!text) {
+        throw new Error("Empty response from Gemini");
+    }
+
+    // Remove markdown wrappers if present
+    if (text.startsWith("```") && text.endsWith("```")) {
+        text = text.replace(/^```[a-z]*\n?|```$/g, "").trim();
     }
 
     return text;
