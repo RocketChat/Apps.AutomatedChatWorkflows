@@ -5,16 +5,23 @@ import {
 
 export enum SettingEnum {
     ID_LLM_PROVIDER = `llm-provider`,
+
     ID_GROQ_API_KEY = `groq-model`,
     ID_GROQ_MODEL = `groq-api-key`,
+
+    ID_GEMINI_MODEL = `gemini-model`, 
     ID_GEMINI_API_KEY = `gemini-api-key`,
+   
+
     ID_RC_MODEL = `rc-model`,
     ID_RC_AUTH_TOKEN = `rc-auth-token`,
     ID_RC_USER_ID = `rc-user-id`,
+
     KEY_GROQ = `groq`,
     KEY_GEMINI = `gemini`,
     KEY_RC = `rocketchat`,
 }
+
 
 
 export const settings: ISetting[] = [
@@ -50,6 +57,19 @@ export const settings: ISetting[] = [
         i18nLabel: "Groq API Key (required for Groqcloud)",
         i18nPlaceholder: "Groq API Key",
     },
+
+
+    {
+        id: SettingEnum.ID_GEMINI_MODEL,
+        type: SettingType.STRING,
+        packageValue: "",
+        required: false,
+        public: false,
+        i18nLabel: "Gemini Model (required for Google AI Studio)",
+        i18nPlaceholder: "e.g. gemini-2.5-flash, gemini-1.5-pro",
+    },
+
+
     {
         id: SettingEnum.ID_GEMINI_API_KEY,
         type: SettingType.PASSWORD,
@@ -74,21 +94,21 @@ export const settings: ISetting[] = [
     },
     {
         id: SettingEnum.ID_RC_AUTH_TOKEN,
-        i18nLabel:
-            "Personal Access Token (required for In House (Rocket Chat))",
+        i18nLabel: "Personal Access Token (required for In House (Rocket Chat))",
         i18nDescription: "Must be filled to enable file summary add-on",
         type: SettingType.PASSWORD,
         required: false,
         public: false,
         packageValue: "",
     },
-    {
-        id: SettingEnum.ID_RC_USER_ID,
-        i18nLabel: "User ID (required for In House (Rocket Chat))",
-        i18nDescription: "Must be filled to enable file summary add-on",
-        type: SettingType.STRING,
-        required: false,
-        public: false,
-        packageValue: "",
-    },
+        {
+            id: SettingEnum.ID_RC_USER_ID,
+            i18nLabel: "User ID (required for In House (Rocket Chat))",
+            i18nDescription: "Must be filled to enable file summary add-on",
+            type: SettingType.STRING,
+            required: false,
+            public: false,
+            packageValue: "",
+        },
+        
 ];
