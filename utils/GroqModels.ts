@@ -27,7 +27,7 @@ export async function createTextCompletionGroq(
     }
 
     const body = {
-        model:groqModel,
+        groqModel,
         messages: [
             {
                 role: "system",
