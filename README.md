@@ -35,6 +35,7 @@ You can create chat workflow automations using **two methods**:
 - Admins must configure settings in the UI:
   - Navigate to: `Marketplace → Private Apps → AI Chat Workflows Automation → Settings`
   - Only users with admin access can configure the app’s LLM settings.
+  - **Confidence Threshold**: Adjust minimum confidence (0-100) for trigger validation. Lower (40-60) = creative/flexible, Higher (85-95) = strict/precise. Default: 75.
 
 ### 2. ⚙️ Use Slash Command `/chat-automation-create`
 - Opens a UI modal where you can fill in all the necessary details to create a workflow.
