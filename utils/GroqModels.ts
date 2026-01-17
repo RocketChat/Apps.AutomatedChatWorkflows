@@ -20,14 +20,14 @@ export async function createTextCompletionGroq(
     const groqModel = await read
         .getEnvironmentReader()
         .getSettings()
-        .getValueById(SettingEnum.ID_GROQ_MODEL);
+        .getValueById(SettingEnum.ID_MODEL);
 
     if (!groqModel) {
-        throw new Error("groqModel not configured.");
+        throw new Error("Model not configured.");
     }
 
     const body = {
-        groqModel,
+        model: groqModel,
         messages: [
             {
                 role: "system",

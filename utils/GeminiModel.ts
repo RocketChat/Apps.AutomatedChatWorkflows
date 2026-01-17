@@ -15,7 +15,16 @@ export async function createTextCompletionGemini(
         throw new Error("geminiApiKey not configured.");
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+    const geminiModel = await read
+        .getEnvironmentReader()
+        .getSettings()
+        .getValueById(SettingEnum.ID_MODEL);
+
+    if (!geminiModel) {
+        throw new Error("Model not configured.");
+    }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`;
 
     const body = {
         contents: [{ parts: [{ text: prompt }] }],
