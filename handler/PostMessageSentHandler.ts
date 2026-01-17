@@ -23,6 +23,7 @@ import {
 } from "../utils/Messages";
 import { ActionTypeEnum } from "../definitions/ActionTypeEnum";
 import { createTextCompletion } from "../utils/AIProvider";
+import { SettingEnum } from "../settings/settings";
 
 interface CheckConditionResponse {
     condition_met: boolean;
@@ -65,6 +66,16 @@ export class PostMessageSentHandler implements IPostMessageSent {
             const triggerResponses2 =
                 await findTriggerResponsesByNullCombinations(read);
             const allResponses = [...triggerResponses, ...triggerResponses2];
+
+            const confidenceThresholdSetting = (await read
+                .getEnvironmentReader()
+                .getSettings()
+                .getValueById(SettingEnum.ID_CONFIDENCE_THRESHOLD)) as number;
+
+            const confidenceThreshold = Math.max(
+                0,
+                Math.min(100, confidenceThresholdSetting || 75)
+            );
 
             for (const [index, response] of allResponses.entries()) {
                 // UI Approach
@@ -141,7 +152,7 @@ export class PostMessageSentHandler implements IPostMessageSent {
                         : checkConditionPromptByLLM;
 
                 if (!checkConditionResponse.condition_met) continue;
-                if (checkConditionResponse.confidence < 75) continue;
+                if (checkConditionResponse.confidence < confidenceThreshold) continue;
 
                 if (
                     response.data.response.action ===

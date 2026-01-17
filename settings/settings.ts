@@ -11,6 +11,7 @@ export enum SettingEnum {
     ID_RC_MODEL = `rc-model`,
     ID_RC_AUTH_TOKEN = `rc-auth-token`,
     ID_RC_USER_ID = `rc-user-id`,
+    ID_CONFIDENCE_THRESHOLD = `confidence-threshold`,
     KEY_GROQ = `groq`,
     KEY_GEMINI = `gemini`,
     KEY_RC = `rocketchat`,
@@ -90,5 +91,15 @@ export const settings: ISetting[] = [
         required: false,
         public: false,
         packageValue: "",
+    },
+    {
+        id: SettingEnum.ID_CONFIDENCE_THRESHOLD,
+        i18nLabel: "Minimum Confidence Threshold (0-100)",
+        i18nDescription: "Lower = creative/flexible (less accurate), Higher = strict/precise (more accurate). Default: 75",
+        i18nPlaceholder: "75",
+        type: SettingType.NUMBER,
+        required: true,
+        public: true,
+        packageValue: 75,
     },
 ];
