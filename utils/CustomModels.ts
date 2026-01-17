@@ -2,24 +2,31 @@ import { IHttp, IRead } from "@rocket.chat/apps-engine/definition/accessors";
 import { SettingEnum } from "../settings/settings";
 
 
-export async function createTextCompletionRocketChat(
+export async function createTextCompletionCustom(
     read: IRead,
     http: IHttp,
     prompt: string
 ): Promise<string> {
-    const rcModel = await read
+    const baseUrl = await read
         .getEnvironmentReader()
         .getSettings()
-        .getValueById(SettingEnum.ID_RC_MODEL);
+        .getValueById(SettingEnum.ID_CUSTOM_URL);
 
-    if (!rcModel) {
-        throw new Error("rcModel not configured.");
+    if (!baseUrl) {
+        throw new Error("Custom model base URL not configured.");
     }
 
-    const url = `http://${rcModel}/v1`;
+    const customModel = await read
+        .getEnvironmentReader()
+        .getSettings()
+        .getValueById(SettingEnum.ID_MODEL);
+
+    if (!customModel) {
+        throw new Error("Model not configured.");
+    }
 
     const body = {
-        rcModel,
+        model: customModel,
         messages: [
             {
                 role: "system",
@@ -29,7 +36,7 @@ export async function createTextCompletionRocketChat(
         temperature: 0,
     };
 
-    const response = await http.post(url + "/chat/completions", {
+    const response = await http.post(baseUrl, {
         headers: {
             "Content-Type": "application/json",
         },
@@ -37,7 +44,7 @@ export async function createTextCompletionRocketChat(
     });
 
     if (!response.content) {
-        console.log("Something is wrong with AI. Please try again later");
+        console.log(response);
         throw new Error("Something is wrong with AI. Please try again later");
     }
 
