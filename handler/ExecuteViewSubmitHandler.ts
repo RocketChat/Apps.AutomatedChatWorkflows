@@ -18,7 +18,7 @@ export class ExecuteViewSubmitHandler {
         private readonly http: IHttp,
         private readonly modify: IModify,
         private readonly persistence: IPersistence
-    ) {}
+    ) { }
 
     public async run(context: UIKitViewSubmitInteractionContext) {
         const { user, view } = context.getInteractionData();
@@ -47,11 +47,11 @@ export class ExecuteViewSubmitHandler {
     private async handleAutomationCreateModal(
         context: UIKitViewSubmitInteractionContext
     ) {
-        const { user, view } = context.getInteractionData();
+        let { user, view, room } = context.getInteractionData();
 
         const action = view.state?.["actionBlock"]?.["action"] || "";
         const users = view.state?.["usersBlock"]?.["users"] || "";
-        const channels = view.state?.["channelsBlock"]?.["channels"] || "";
+        let channels = view.state?.["channelsBlock"]?.["channels"] || "";
         const condition = view.state?.["conditionBlock"]?.["condition"] || "";
         let response = view.state?.["responseBlock"]?.["response"] || "";
 
@@ -59,7 +59,16 @@ export class ExecuteViewSubmitHandler {
             response = "N/A";
         }
 
-        if (users && channels && condition && action && response) {
+        if (!room) {
+            const result = await getRoom(this.read, user.id);
+            room = result.room as any;
+        }
+
+        if (!channels && room && room.slugifiedName) {
+            channels = room.slugifiedName;
+        }
+
+        if (condition && action && (response || action === 'delete-message')) {
             const command = `When the user @${users} sends a message in the #${channels} channel that includes the phrase "${condition}", then perform the action "${action}" with response '${response}'.`;
 
             const id = await saveTriggerResponse(
@@ -67,7 +76,7 @@ export class ExecuteViewSubmitHandler {
                 {
                     command: command,
                     trigger: {
-                        user: users,
+                        user: users || null,
                         channel: channels,
                         condition: condition,
                     },
@@ -82,7 +91,6 @@ export class ExecuteViewSubmitHandler {
                 true
             );
 
-            const { room, error } = await getRoom(this.read, user.id);
             if (room) {
                 await sendNotification(
                     this.read,
