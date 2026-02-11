@@ -1,0 +1,17 @@
+export enum EditWorkflowModalEnum {
+    VIEW_ID = 'edit_workflow_modal',
+    USERS_BLOCK = 'edit_users_block',
+    USERS_ACTION = 'users',
+    CHANNELS_BLOCK = 'edit_channels_block',
+    CHANNELS_ACTION = 'channels',
+    CONDITION_BLOCK = 'edit_condition_block',
+    CONDITION_ACTION = 'condition',
+    ACTION_BLOCK = 'edit_action_block',
+    ACTION_ACTION = 'action',
+    RESPONSE_BLOCK = 'edit_response_block',
+    RESPONSE_ACTION = 'response',
+    NOTIFY_BLOCK = 'edit_notify_block',
+    NOTIFY_ACTION = 'notify',
+    ACTIVE_BLOCK = 'edit_active_block',
+    ACTIVE_ACTION = 'active',
+}

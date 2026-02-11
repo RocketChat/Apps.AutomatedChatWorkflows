@@ -46,12 +46,7 @@ You can create chat workflow automations using **two methods**:
 | Command | Description |
 |--------|-------------|
 | `/chat-automation ping` | Sends a hello message to your Direct Messages (DM) from the app |
-| `/chat-automation list` | Displays a list of all created workflows |
-| `/chat-automation delete <id>` | Deletes the workflow with the specified ID |
-| `/chat-automation enable <id>` | Enables the workflow with the specified ID |
-| `/chat-automation disable <id>` | Disables the workflow with the specified ID |
-| `/chat-automation notification off <id>` | Disables notifications for a workflow trigger |
-| `/chat-automation notification on <id>` | Enables notifications for a workflow trigger |
+| `/chat-automation list` | Displays a list of all created workflows where u can delete and edit them as well |
 
 ---
 
