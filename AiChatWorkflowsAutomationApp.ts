@@ -17,15 +17,15 @@ import {
 } from "@rocket.chat/apps-engine/definition/messages";
 import { PostMessageSentToBotHandler } from "./handler/PostMessageSentToBotHandler";
 import { ChatAutomationCreate } from "./slashCommands/ChatAutomationCreate";
-import { UIKitViewSubmitInteractionContext } from "@rocket.chat/apps-engine/definition/uikit";
+import { IUIKitResponse, UIKitBlockInteractionContext, UIKitViewSubmitInteractionContext } from "@rocket.chat/apps-engine/definition/uikit";
 import { ExecuteViewSubmitHandler } from "./handler/ExecuteViewSubmitHandler";
 import { PostMessageSentHandler } from "./handler/PostMessageSentHandler";
 import { ChatAutomation } from "./slashCommands/ChatAutomation";
+import { ExecuteBlockActionHandler } from "./handler/ExecuteBlockActionHandler";
 
 export class AiChatWorkflowsAutomationApp
     extends App
-    implements IPostMessageSentToBot, IPostMessageSent
-{
+    implements IPostMessageSentToBot, IPostMessageSent {
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
         super(info, logger, accessors);
     }
@@ -46,7 +46,23 @@ export class AiChatWorkflowsAutomationApp
             modify
         );
     }
-
+    public async executeBlockActionHandler(
+        context: UIKitBlockInteractionContext,
+        read: IRead,
+        http: IHttp,
+        persistence: IPersistence,
+        modify: IModify
+    ): Promise<IUIKitResponse> {
+        const handler = new ExecuteBlockActionHandler(
+            this,
+            read,
+            http,
+            modify,
+            persistence,
+            context
+        );
+        return await handler.handleActions();
+    }
     public async executeViewSubmitHandler(
         context: UIKitViewSubmitInteractionContext,
         read: IRead,

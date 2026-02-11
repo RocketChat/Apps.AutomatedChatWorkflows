@@ -10,23 +10,15 @@ import {
 } from "@rocket.chat/apps-engine/definition/slashcommands";
 import { AiChatWorkflowsAutomationApp } from "../AiChatWorkflowsAutomationApp";
 import {
-    deleteTriggerResponse,
     findTriggerResponsesByCreatorAndLLM,
-    updateIsActiveStatus,
-    updateToNotifyStatus,
 } from "../utils/PersistenceMethods";
 import { IUser } from "@rocket.chat/apps-engine/definition/users";
 import { MessageEnum } from "../definitions/MessageEnum";
-import {
-    sendDirectMessage,
-    sendNotification,
-    sendMessageInChannel,
-    sendThreadMessage,
-} from "../utils/Messages";
-import { IMessageRaw } from "@rocket.chat/apps-engine/definition/messages";
+import { sendDirectMessage, sendNotification } from "../utils/Messages";
+import { listWorkflowContextualBar } from "../modals/ListContextualBar";
 
 export class ChatAutomation implements ISlashCommand {
-    public constructor(private readonly app: AiChatWorkflowsAutomationApp) {}
+    public constructor(private readonly app: AiChatWorkflowsAutomationApp) { }
 
     public command = "chat-automation";
     public i18nDescription = "chat automation config";
@@ -46,219 +38,23 @@ export class ChatAutomation implements ISlashCommand {
 
         const appUser = (await read.getUserReader().getAppUser()) as IUser;
 
-        const command = context.getArguments();
         const [subcommand] = context.getArguments();
         const filter = subcommand ? subcommand.toLowerCase() : "";
 
         if (filter === "list") {
-            const userCommands = await findTriggerResponsesByCreatorAndLLM(
-                read,
-                user.id,
-                true
-            );
-
-            let messageToSend: string;
-
-            if (userCommands.length > 0) {
-                let counter = 1;
-                messageToSend = userCommands
-                    .map((command) => {
-                        const line = `${counter}. *Id*: ${command.data.id}
-                        *Command*: ${command.data.command}
-                        *Notification*: ${command.data.toNotify ? "ON" : "OFF"}
-                        *Active Status*: ${
-                            command.data.isActive ? "Enabled" : "Disabled"
-                        }\n`;
-                        counter++;
-                        return line;
-                    })
-                    .join("\n");
-            } else {
-                messageToSend = MessageEnum.WORKFLOW_NOT_FOUND_DM;
-            }
-
-            await sendNotification(
-                read,
-                modify,
-                user,
-                room,
-                `Created using chat: 
-                ${messageToSend}`,
-                threadId
-            );
-
-            /*
-            const messages: IMessageRaw[] = await read
-                .getRoomReader()
-                .getMessages(room.id, {
-                    limit: Math.min(1),
-                    sort: { createdAt: "desc" },
-                });
-
-            const newThreadId = messages[0]?.id;
-            if (newThreadId) {
-                await sendThreadMessage(
-                    read,
-                    modify,
-                    appUser,
-                    room,
-                    messageToSend,
-                    newThreadId
-                );
-            }
-            */
-
-            // ==================================================================
-            const userCommandsUI = await findTriggerResponsesByCreatorAndLLM(
-                read,
-                user.id,
-                false
-            );
-
-            let messageToSendUI: string;
-
-            if (userCommandsUI.length > 0) {
-                let counter = 1;
-                messageToSendUI = userCommandsUI
-                    .map((command) => {
-                        const line = `${counter}. *Id*: ${command.data.id}
-                        *Command*: ${command.data.command}
-                        *Notification*: ${command.data.toNotify ? "ON" : "OFF"}
-                        *Active Status*: ${
-                            command.data.isActive ? "Enabled" : "Disabled"
-                        }\n`;
-                        counter++;
-                        return line;
-                    })
-                    .join("\n");
-            } else {
-                messageToSendUI = MessageEnum.WORKFLOW_NOT_FOUND_UI;
-            }
-
-            await sendNotification(
-                read,
-                modify,
-                user,
-                room,
-                `Created using UI Block: 
-                ${messageToSendUI}`,
-                threadId
-            );
-
-            /*
-            const messagesForUI: IMessageRaw[] = await read
-                .getRoomReader()
-                .getMessages(room.id, {
-                    limit: Math.min(1),
-                    sort: { createdAt: "desc" },
-                });
-
-            const newThreadIdUI = messagesForUI[0]?.id;
-            if (newThreadIdUI) {
-                await sendThreadMessage(
-                    read,
-                    modify,
-                    appUser,
-                    room,
-                    messageToSendUI,
-                    newThreadIdUI
-                );
-            }
-            */
-        } else if (filter === "delete") {
-            if (command[1]) {
-                await deleteTriggerResponse(persistence, command[1]);
-
-                await sendNotification(
-                    read,
-                    modify,
-                    user,
-                    room,
-                    `Deleted the workflow with id ${command[1]}`,
-                    threadId
-                );
-            }
-        } else if (filter === "notification") {
-            if (command[1]) {
-                if (command[1].toLocaleLowerCase() === "off") {
-                    if (command[2]) {
-                        await updateToNotifyStatus(
-                            persistence,
-                            read,
-                            command[2],
-                            false
-                        );
-
-                        await sendNotification(
-                            read,
-                            modify,
-                            user,
-                            room,
-                            `Notification config updated to 'OFF' for workflow with id: ${command[2]}`,
-                            threadId
-                        );
-                    }
-                } else if (command[1].toLocaleLowerCase() === "on") {
-                    if (command[2]) {
-                        await updateToNotifyStatus(
-                            persistence,
-                            read,
-                            command[2],
-                            true
-                        );
-
-                        await sendNotification(
-                            read,
-                            modify,
-                            user,
-                            room,
-                            `Notification config updated to 'ON' for workflow with id: ${command[2]}`,
-                            threadId
-                        );
-                    }
-                }
-            }
-        } else if (filter === "enable") {
-            if (command[1]) {
-                await updateIsActiveStatus(persistence, read, command[1], true);
-
-                await sendNotification(
-                    read,
-                    modify,
-                    user,
-                    room,
-                    `Automation workflow with id: ${command[1]} is now enabled.`,
-                    threadId
-                );
-            }
-        } else if (filter === "disable") {
-            if (command[1]) {
-                await updateIsActiveStatus(
-                    persistence,
-                    read,
-                    command[1],
-                    false
-                );
-                await sendNotification(
-                    read,
-                    modify,
-                    user,
-                    room,
-                    `Automation workflow with id: ${command[1]} is now disabled.`,
-                    threadId
-                );
-            }
+            await this.openWorkflowListContextualBar(context, read, modify);
         } else if (filter === "ping") {
             await sendDirectMessage(
                 read,
                 modify,
                 user,
                 `_Hello ${user.name}, I'm ${appUser.name} App. I can help you create Chat Automation workflows!_
-                Here’s how it works: 
+                Here's how it works:
                 _"Whenever @<username> posts any welcome messages in #<channel name>, immediately DM them with a thank-you note."_
                 _Just describe what you'd like to automate, and I'll take care of the rest!_`
             );
         } else {
+            // Show help message for unknown commands
             await sendNotification(
                 read,
                 modify,
@@ -267,6 +63,60 @@ export class ChatAutomation implements ISlashCommand {
                 MessageEnum.CHAT_AUTOMATION_COMMAND_INSTRUCTION_MESSAGE,
                 threadId
             );
+        }
+    }
+
+    private async openWorkflowListContextualBar(
+        context: SlashCommandContext,
+        read: IRead,
+        modify: IModify,
+    ): Promise<void> {
+        const room = context.getRoom();
+        const user = context.getSender();
+
+        // Fetch chat-based workflows (usedLLM = true)
+        const chatWorkflows = await findTriggerResponsesByCreatorAndLLM(
+            read,
+            user.id,
+            true
+        );
+
+        // Fetch UI-based workflows (usedLLM = false)
+        const uiWorkflows = await findTriggerResponsesByCreatorAndLLM(
+            read,
+            user.id,
+            false
+        );
+
+        // Transform the data to match the interface expected by the contextual bar
+        const transformedChatWorkflows = chatWorkflows.map((cmd) => ({
+            id: cmd.data.id,
+            command: cmd.data.command,
+            toNotify: cmd.data.toNotify,
+            isActive: cmd.data.isActive,
+            createdViaUI: false,
+        }));
+
+        const transformedUIWorkflows = uiWorkflows.map((cmd) => ({
+            id: cmd.data.id,
+            command: cmd.data.command,
+            toNotify: cmd.data.toNotify,
+            isActive: cmd.data.isActive,
+            createdViaUI: true,
+        }));
+
+        // Create the contextual bar view
+        const contextualBarView = await listWorkflowContextualBar(
+            transformedChatWorkflows,
+            transformedUIWorkflows,
+        );
+
+        // Open the contextual bar
+        const triggerId = context.getTriggerId();
+        if (triggerId) {
+            await modify
+                .getUiController()
+                .openSurfaceView(contextualBarView, { triggerId }, user);
         }
     }
 }
