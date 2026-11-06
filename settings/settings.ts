@@ -5,15 +5,18 @@ import {
 
 export enum SettingEnum {
     ID_LLM_PROVIDER = `llm-provider`,
-    ID_GROQ_API_KEY = `groq-model`,
-    ID_GROQ_MODEL = `groq-api-key`,
+    ID_GROQ_API_KEY = `groq-api-key`,
+    ID_GROQ_MODEL = `groq-model`,
     ID_GEMINI_API_KEY = `gemini-api-key`,
     ID_RC_MODEL = `rc-model`,
     ID_RC_AUTH_TOKEN = `rc-auth-token`,
     ID_RC_USER_ID = `rc-user-id`,
+    ID_SELF_HOSTED_URL = `self-hosted-url`,
+    ID_SELF_HOSTED_MODEL = `self-hosted-model`,
     KEY_GROQ = `groq`,
     KEY_GEMINI = `gemini`,
     KEY_RC = `rocketchat`,
+    KEY_SELF_HOSTED = `self-hosted`,
 }
 
 
@@ -27,6 +30,7 @@ export const settings: ISetting[] = [
             { key: SettingEnum.KEY_GROQ, i18nLabel: "1. Groqcloud (groq.com)" },
             { key: SettingEnum.KEY_GEMINI, i18nLabel: "2. Google AI Studio" },
             { key: SettingEnum.KEY_RC, i18nLabel: "3. In House (Rocket Chat)" },
+            { key: SettingEnum.KEY_SELF_HOSTED, i18nLabel: "4. Self-Hosted (OpenAI-compatible)" },
         ],
         required: true,
         public: true,
@@ -86,6 +90,24 @@ export const settings: ISetting[] = [
         id: SettingEnum.ID_RC_USER_ID,
         i18nLabel: "User ID (required for In House (Rocket Chat))",
         i18nDescription: "Must be filled to enable file summary add-on",
+        type: SettingType.STRING,
+        required: false,
+        public: false,
+        packageValue: "",
+    },
+    {
+        id: SettingEnum.ID_SELF_HOSTED_URL,
+        i18nLabel: "Self-Hosted Base URL (required for Self-Hosted)",
+        i18nDescription: "Base URL of the OpenAI-compatible endpoint, e.g. http://localhost:11434/v1 or https://my-llm.example.com/api/v1",
+        type: SettingType.STRING,
+        required: false,
+        public: false,
+        packageValue: "",
+    },
+    {
+        id: SettingEnum.ID_SELF_HOSTED_MODEL,
+        i18nLabel: "Self-Hosted Model (required for Self-Hosted)",
+        i18nDescription: "Model name to send in the 'model' field, e.g. llama3, mistral",
         type: SettingType.STRING,
         required: false,
         public: false,
