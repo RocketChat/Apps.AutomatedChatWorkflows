@@ -1,7 +1,7 @@
 import { IHttp, IRead } from "@rocket.chat/apps-engine/definition/accessors";
 import { createTextCompletionGroq } from "./GroqModels";
 import { createTextCompletionGemini } from "./GeminiModel";
-import { createTextCompletionRocketChat } from "./RCInHouseHostedModels";
+import { createTextCompletionRocketChat, createTextCompletionSelfHosted } from "./RCInHouseHostedModels";
 import { SettingEnum } from "../settings/settings";
 
 export async function createTextCompletion(
@@ -27,6 +27,9 @@ export async function createTextCompletion(
         }
         case SettingEnum.KEY_RC: {
             return await createTextCompletionRocketChat(read, http, prompt);
+        }
+        case SettingEnum.KEY_SELF_HOSTED: {
+            return await createTextCompletionSelfHosted(read, http, prompt);
         }
         default:
             throw new Error(`Unsupported AI provider: ${aiProvider}`);
