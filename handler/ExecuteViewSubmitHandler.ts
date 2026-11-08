@@ -7,9 +7,14 @@ import {
 import { UIKitViewSubmitInteractionContext } from "@rocket.chat/apps-engine/definition/uikit";
 import { AiChatWorkflowsAutomationApp } from "../AiChatWorkflowsAutomationApp";
 import { Modals } from "../definitions/ModalsEnum";
-import { getRoom, saveTriggerResponse } from "../utils/PersistenceMethods";
+import {
+    getRoom,
+    saveTriggerResponse,
+    setWorkflowSearchState,
+} from "../utils/PersistenceMethods";
 import { sendNotification } from "../utils/Messages";
 import { MessageEnum } from "../definitions/MessageEnum";
+import { WorkflowListContextualBar } from "../modals/WorkflowListContextualBar";
 
 export class ExecuteViewSubmitHandler {
     constructor(
@@ -36,12 +41,53 @@ export class ExecuteViewSubmitHandler {
             case Modals.AutomationCreate:
                 return await this.handleAutomationCreateModal(context);
 
+            case Modals.WorkflowListContextualBar:
+                return await this.handleWorkflowListContextualBar(context);
+
             default:
                 return {
                     success: false,
                     error: "Unknown modal ID",
                 };
         }
+    }
+
+    private async handleWorkflowListContextualBar(
+        context: UIKitViewSubmitInteractionContext
+    ) {
+        const { user, view } = context.getInteractionData();
+        const state = view.state as
+            | {
+                  workflowSearchBlock?: {
+                      workflow_search_input?: string;
+                  };
+                  workflowSectionBlock?: {
+                      workflow_section_select?: string;
+                  };
+              }
+            | undefined;
+
+        const searchQuery =
+            state?.workflowSearchBlock?.workflow_search_input || "";
+        const selectedSection =
+            state?.workflowSectionBlock?.workflow_section_select || "all";
+
+        await setWorkflowSearchState(this.persistence, user.id, {
+            searchQuery,
+            selectedSection,
+        });
+
+        const updatedContextualBar = await WorkflowListContextualBar({
+            read: this.read,
+            modify: this.modify,
+            userId: user.id,
+            searchQuery,
+            selectedSection,
+        });
+
+        return context
+            .getInteractionResponder()
+            .updateContextualBarViewResponse(updatedContextualBar);
     }
 
     private async handleAutomationCreateModal(

@@ -11,7 +11,7 @@ import {
 import { AiChatWorkflowsAutomationApp } from "../AiChatWorkflowsAutomationApp";
 import {
     deleteTriggerResponse,
-    findTriggerResponsesByCreatorAndLLM,
+    setWorkflowSearchState,
     updateIsActiveStatus,
     updateToNotifyStatus,
 } from "../utils/PersistenceMethods";
@@ -24,6 +24,7 @@ import {
     sendThreadMessage,
 } from "../utils/Messages";
 import { IMessageRaw } from "@rocket.chat/apps-engine/definition/messages";
+import { WorkflowListContextualBar } from "../modals/WorkflowListContextualBar";
 
 export class ChatAutomation implements ISlashCommand {
     public constructor(private readonly app: AiChatWorkflowsAutomationApp) {}
@@ -51,120 +52,49 @@ export class ChatAutomation implements ISlashCommand {
         const filter = subcommand ? subcommand.toLowerCase() : "";
 
         if (filter === "list") {
-            const userCommands = await findTriggerResponsesByCreatorAndLLM(
-                read,
-                user.id,
-                true
-            );
-
-            let messageToSend: string;
-
-            if (userCommands.length > 0) {
-                let counter = 1;
-                messageToSend = userCommands
-                    .map((command) => {
-                        const line = `${counter}. *Id*: ${command.data.id}
-                        *Command*: ${command.data.command}
-                        *Notification*: ${command.data.toNotify ? "ON" : "OFF"}
-                        *Active Status*: ${
-                            command.data.isActive ? "Enabled" : "Disabled"
-                        }\n`;
-                        counter++;
-                        return line;
-                    })
-                    .join("\n");
-            } else {
-                messageToSend = MessageEnum.WORKFLOW_NOT_FOUND_DM;
-            }
-
-            await sendNotification(
-                read,
-                modify,
-                user,
-                room,
-                `Created using chat: 
-                ${messageToSend}`,
-                threadId
-            );
-
-            /*
-            const messages: IMessageRaw[] = await read
-                .getRoomReader()
-                .getMessages(room.id, {
-                    limit: Math.min(1),
-                    sort: { createdAt: "desc" },
-                });
-
-            const newThreadId = messages[0]?.id;
-            if (newThreadId) {
-                await sendThreadMessage(
+            const triggerId = context.getTriggerId();
+            if (!triggerId) {
+                await sendNotification(
                     read,
                     modify,
-                    appUser,
+                    user,
                     room,
-                    messageToSend,
-                    newThreadId
+                    "Unable to open Workflow Manager: No trigger ID available.",
+                    threadId
                 );
-            }
-            */
-
-            // ==================================================================
-            const userCommandsUI = await findTriggerResponsesByCreatorAndLLM(
-                read,
-                user.id,
-                false
-            );
-
-            let messageToSendUI: string;
-
-            if (userCommandsUI.length > 0) {
-                let counter = 1;
-                messageToSendUI = userCommandsUI
-                    .map((command) => {
-                        const line = `${counter}. *Id*: ${command.data.id}
-                        *Command*: ${command.data.command}
-                        *Notification*: ${command.data.toNotify ? "ON" : "OFF"}
-                        *Active Status*: ${
-                            command.data.isActive ? "Enabled" : "Disabled"
-                        }\n`;
-                        counter++;
-                        return line;
-                    })
-                    .join("\n");
-            } else {
-                messageToSendUI = MessageEnum.WORKFLOW_NOT_FOUND_UI;
+                return;
             }
 
-            await sendNotification(
-                read,
-                modify,
-                user,
-                room,
-                `Created using UI Block: 
-                ${messageToSendUI}`,
-                threadId
-            );
-
-            /*
-            const messagesForUI: IMessageRaw[] = await read
-                .getRoomReader()
-                .getMessages(room.id, {
-                    limit: Math.min(1),
-                    sort: { createdAt: "desc" },
+            try {
+                await setWorkflowSearchState(persistence, user.id, {
+                    searchQuery: "",
+                    selectedSection: "all",
                 });
 
-            const newThreadIdUI = messagesForUI[0]?.id;
-            if (newThreadIdUI) {
-                await sendThreadMessage(
+                const contextualBar = await WorkflowListContextualBar({
                     read,
                     modify,
-                    appUser,
+                    userId: user.id,
+                    searchQuery: "",
+                    selectedSection: "all",
+                });
+
+                await modify.getUiController().openContextualBarView(
+                    contextualBar,
+                    { triggerId },
+                    user
+                );
+            } catch (error) {
+                this.app.getLogger().error("Error opening WorkflowListContextualBar:", error);
+                await sendNotification(
+                    read,
+                    modify,
+                    user,
                     room,
-                    messageToSendUI,
-                    newThreadIdUI
+                    "Failed to open Workflow Manager contextual bar. Please try again.",
+                    threadId
                 );
             }
-            */
         } else if (filter === "delete") {
             if (command[1]) {
                 await deleteTriggerResponse(persistence, command[1]);

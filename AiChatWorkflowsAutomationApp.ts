@@ -17,8 +17,12 @@ import {
 } from "@rocket.chat/apps-engine/definition/messages";
 import { PostMessageSentToBotHandler } from "./handler/PostMessageSentToBotHandler";
 import { ChatAutomationCreate } from "./slashCommands/ChatAutomationCreate";
-import { UIKitViewSubmitInteractionContext } from "@rocket.chat/apps-engine/definition/uikit";
+import {
+    UIKitBlockInteractionContext,
+    UIKitViewSubmitInteractionContext,
+} from "@rocket.chat/apps-engine/definition/uikit";
 import { ExecuteViewSubmitHandler } from "./handler/ExecuteViewSubmitHandler";
+import { ExecuteBlockActionHandler } from "./handler/ExecuteBlockActionHandler";
 import { PostMessageSentHandler } from "./handler/PostMessageSentHandler";
 import { ChatAutomation } from "./slashCommands/ChatAutomation";
 
@@ -55,6 +59,23 @@ export class AiChatWorkflowsAutomationApp
         modify: IModify
     ) {
         const handler = new ExecuteViewSubmitHandler(
+            this,
+            read,
+            http,
+            modify,
+            persistence
+        );
+        return await handler.run(context);
+    }
+
+    public async executeBlockActionHandler(
+        context: UIKitBlockInteractionContext,
+        read: IRead,
+        http: IHttp,
+        persistence: IPersistence,
+        modify: IModify
+    ) {
+        const handler = new ExecuteBlockActionHandler(
             this,
             read,
             http,
