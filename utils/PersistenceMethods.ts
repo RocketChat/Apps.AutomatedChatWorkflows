@@ -780,3 +780,54 @@ export async function findTriggerResponsesByNullCombinations(
         return case1 || case2 || case3;
     });
 }
+
+// =======================================================================
+
+export interface WorkflowSearchState {
+    searchQuery: string;
+    selectedSection: string;
+}
+
+const WORKFLOW_SEARCH_STATE_TRACKER = "workflow_search_state";
+
+export async function setWorkflowSearchState(
+    persistence: IPersistence,
+    userId: string,
+    state: Partial<WorkflowSearchState>
+): Promise<void> {
+    const userAssoc = new RocketChatAssociationRecord(
+        RocketChatAssociationModel.USER,
+        userId
+    );
+    const trackerAssoc = new RocketChatAssociationRecord(
+        RocketChatAssociationModel.MISC,
+        WORKFLOW_SEARCH_STATE_TRACKER
+    );
+
+    await persistence.updateByAssociations(
+        [userAssoc, trackerAssoc],
+        state,
+        true
+    );
+}
+
+export async function getWorkflowSearchState(
+    read: IRead,
+    userId: string
+): Promise<WorkflowSearchState | undefined> {
+    const userAssoc = new RocketChatAssociationRecord(
+        RocketChatAssociationModel.USER,
+        userId
+    );
+    const trackerAssoc = new RocketChatAssociationRecord(
+        RocketChatAssociationModel.MISC,
+        WORKFLOW_SEARCH_STATE_TRACKER
+    );
+
+    const [record] = (await read
+        .getPersistenceReader()
+        .readByAssociations([userAssoc, trackerAssoc])) as WorkflowSearchState[];
+
+    return record;
+}
+
